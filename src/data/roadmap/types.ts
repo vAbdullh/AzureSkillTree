@@ -1,12 +1,14 @@
 export type RoadmapNodeStatus = 'not-started' | 'learning' | 'mastered'
 
 export type RoadmapTopic = {
-  nodeId: string
+  id: string
   title: string
-  category: string
   description: string
+  level: string
+  category: string
   prerequisites: string[]
+  difficulty: string
+  learnToComplete: string[]
+  practice: string[]
+  azureServices: string[]
 }
-
-// Topics will live alongside this contract as static TypeScript data.
-// Firestore stores user progress only, keyed by nodeId.
