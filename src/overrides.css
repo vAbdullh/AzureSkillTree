@@ -3,3 +3,15 @@
 .topic-node.major .node-footer {
   color: #FFFFFF;
 }
+
+.with-panel { grid-template-columns: 335px minmax(0, 1fr); }
+.with-panel .detail { grid-column: 1; grid-row: 1; border-left: 0; border-right: 1px solid #27272a; }
+.with-panel .canvas-wrap { grid-column: 2; grid-row: 1; }
+.progress-circle { width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; background: conic-gradient(#0078D4 var(--roadmap-progress, 0%), #27272a 0); position: relative; margin-right: 18px; }
+.progress-circle::before { content: ''; position: absolute; width: 44px; height: 44px; border-radius: 50%; background: #0c0c0e; }
+.progress-circle b { position: relative; color: #FFFFFF; font-size: 14px; }
+.progress-circle small { color: #a1a1aa; font-size: 9px; }
+.account { height: 32px; border: 1px solid #3f3f46; border-radius: 5px; background: #18181b; color: #e4e4e7; padding: 0 10px; font-size: 11px; }
+.detail .path { display: none; }
+body[data-can-complete="false"] .continue { opacity: .45; cursor: not-allowed; pointer-events: none; }
+@media(max-width:850px) { .with-panel .detail { grid-column: auto; border-right: 0; } .with-panel .canvas-wrap { grid-column: auto; } }
