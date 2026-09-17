@@ -5,7 +5,7 @@ import { learningLevels } from './data/roadmap/projects'
 import { createGraph, type SkillData } from './lib/learning/graph'
 import { progressFor, type ChallengeProgress } from './lib/learning/progress'
 import { allLearningNodes, ChallengeDetails } from './components/roadmap/ChallengeDetails'
-import { Achievement } from './components/progress/Achievement'
+
 import './SkillTree.css'
 
 const silhouettes = {
@@ -28,9 +28,14 @@ function SkillNode({ data, selected }: NodeProps<Node<SkillData>>) {
   </div>
 }
 const nodeTypes = { skill: SkillNode }
-function CanvasTools({ viewKey }: { viewKey: string }) {
+function CanvasTools({ viewKey, zoomToId }: { viewKey: string; zoomToId: string | null }) {
   const { fitView } = useReactFlow()
   useEffect(() => { const timeout = window.setTimeout(() => void fitView({ padding: .18, duration: 350 }), 80); return () => clearTimeout(timeout) }, [viewKey, fitView])
+  useEffect(() => {
+    if (!zoomToId) return
+    const timeout = window.setTimeout(() => void fitView({ nodes: [{ id: zoomToId }], padding: 0.55, duration: 420, maxZoom: 1.15 }), 60)
+    return () => clearTimeout(timeout)
+  }, [zoomToId, fitView])
   return <Panel position="top-right"><button className="recenter" onClick={() => void fitView({ padding: .18, duration: 450 })}><Scan size={16}/>Recenter</button></Panel>
 }
 function initialLevel() {
@@ -39,6 +44,7 @@ function initialLevel() {
 export function SkillTree({ progress, onComplete, ready, saving, signedIn }: { progress: ChallengeProgress; onComplete: (id: string) => void; ready: boolean; saving: boolean; signedIn: boolean }) {
   const [levelId, setLevelId] = useState(initialLevel)
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [zoomToId, setZoomToId] = useState<string | null>(null)
   const [sidebar, setSidebar] = useState(() => window.innerWidth > 700)
   const [dependencies, setDependencies] = useState(false)
   const [continuations, setContinuations] = useState(true)
@@ -53,15 +59,15 @@ export function SkillTree({ progress, onComplete, ready, saving, signedIn }: { p
     const node = allLearningNodes.find(item => item.id === id)
     if (node && levelId !== 'all') selectLevel(node.kind === 'level' ? node.id : node.levelId)
     setSelectedId(id === 'azure' ? null : id)
+    setZoomToId(id === 'azure' ? null : id)
     setSidebar(true)
   }
   return <div className="learning-workspace">
     <nav className="level-navigation" aria-label="Learning levels">{learningLevels.map(level => { const stats = progressFor(progress, level); return <button key={level.id} className={levelId === level.id ? 'active' : ''} aria-pressed={levelId === level.id} onClick={() => { selectLevel(level.id); setSelectedId(level.id) }}><span>0{level.number}</span><b>{level.title}</b><small>{Math.round(stats.percent)}%</small></button> })}<button className={levelId === 'all' ? 'active' : ''} onClick={() => { selectLevel('all'); setSelectedId(null) }}>Full map</button></nav>
     <div className="game-tree-layout">
-      {sidebar && <aside className="game-details" aria-label="Learning details"><div className="detail-scroll">{selected ? <ChallengeDetails key={selected.id} node={selected} progress={progress} onSelect={select} onClose={() => setSidebar(false)} onComplete={onComplete} ready={ready} saving={saving}/> : <div className="journey-overview"><button className="dismiss" aria-label="Close details" onClick={() => setSidebar(false)}>×</button><p className="game-kicker">PROJECT-BASED LEARNING</p><h2>Build. Operate. Evolve.</h2><p>Grow one Azure system through connected engineering missions. Choose a concept, then take on its challenges.</p><div className="derived-progress"><strong>{Math.floor(overall.percent)}%</strong><span>{overall.completed} / {overall.total} challenges completed</span><progress value={overall.completed} max={overall.total}/></div><button className="complete-skill" onClick={() => select('L1-COM-001')}>Explore your first mission</button><button className="capstone-link" onClick={() => select('CAP-AZURE-001')}><Trophy size={16}/>Final capstone<ChevronIcon/></button><p className="derived-note">{signedIn ? 'Challenge progress syncs to your account.' : 'Progress is saved in this browser. Guest and account progress are kept separate.'}</p><p className="derived-note">Your previous topic progress is preserved separately. This journey starts with challenge completion.</p></div>}</div><Achievement progress={overall.percent}/></aside>}
-      <section className="game-tree-canvas" aria-label="Azure project skill tree"><ReactFlow nodes={graph.nodes} edges={graph.edges} nodeTypes={nodeTypes} onNodeClick={(_, node) => select(node.id)} nodesDraggable={false} nodesConnectable={false} fitView fitViewOptions={{ padding: .18 }} minZoom={.06} maxZoom={2} onlyRenderVisibleElements><Background color="#243346" gap={32} size={1}/><Controls showInteractive={false}/><CanvasTools viewKey={`${levelId}:${sidebar}`}/><Panel position="top-left"><div className="tree-caption">SKILL CONSTELLATION<small>Level → Concept → Challenge</small></div>{!sidebar && <button className="recenter reopen-details" onClick={() => setSidebar(true)}><PanelLeft size={15}/>Details & progress</button>}</Panel><Panel position="bottom-center"><div className="tree-key"><span>⬡ Level</span><span>○ Concept</span><span>◇ Challenge</span><label><input type="checkbox" checked={continuations} onChange={event => setContinuations(event.target.checked)}/><i className="continuation-key"/>Project paths</label><label><input type="checkbox" checked={dependencies} onChange={event => setDependencies(event.target.checked)}/><i className="dependency-key"/>Prerequisites</label></div></Panel></ReactFlow></section>
+      {sidebar && <aside className="game-details" aria-label="Learning details"><div className="detail-scroll">{selected ? <ChallengeDetails key={selected.id} node={selected} progress={progress} onSelect={select} onClose={() => setSidebar(false)} onComplete={onComplete} ready={ready} saving={saving}/> : <div className="journey-overview"><button className="dismiss" aria-label="Close details" onClick={() => setSidebar(false)}>×</button><p className="game-kicker">PROJECT-BASED LEARNING</p><h2>Build. Operate. Evolve.</h2><p>Grow one Azure system through connected engineering missions. Choose a concept, then take on its challenges.</p><div className="derived-progress"><strong>{Math.floor(overall.percent)}%</strong><span>{overall.completed} / {overall.total} challenges completed</span><progress value={overall.completed} max={overall.total}/></div><button className="complete-skill" onClick={() => select('L1-COM-001')}>Explore your first mission</button><button className="capstone-link" onClick={() => select('CAP-AZURE-001')}><Trophy size={16}/>Final capstone<ChevronIcon/></button><p className="derived-note">{signedIn ? 'Challenge progress syncs to your account.' : 'Progress is saved in this browser. Guest and account progress are kept separate.'}</p><p className="derived-note">Your previous topic progress is preserved separately. This journey starts with challenge completion.</p></div>}</div></aside>}
+      <section className="game-tree-canvas" aria-label="Azure project skill tree"><ReactFlow nodes={graph.nodes} edges={graph.edges} nodeTypes={nodeTypes} onNodeClick={(_, node) => select(node.id)} nodesDraggable={false} nodesConnectable={false} fitView fitViewOptions={{ padding: .18 }} minZoom={.06} maxZoom={2} onlyRenderVisibleElements><Background color="#243346" gap={32} size={1}/><Controls showInteractive={false}/><CanvasTools viewKey={`${levelId}:${sidebar}`} zoomToId={zoomToId}/><Panel position="top-left"><div className="tree-caption">SKILL CONSTELLATION<small>Level → Concept → Challenge</small></div>{!sidebar && <button className="recenter reopen-details" onClick={() => setSidebar(true)}><PanelLeft size={15}/>Details & progress</button>}</Panel><Panel position="bottom-center"><div className="tree-key"><span>⬡ Level</span><span>○ Concept</span><span>◇ Challenge</span><label><input type="checkbox" checked={continuations} onChange={event => setContinuations(event.target.checked)}/><i className="continuation-key"/>Project paths</label><label><input type="checkbox" checked={dependencies} onChange={event => setDependencies(event.target.checked)}/><i className="dependency-key"/>Prerequisites</label></div></Panel></ReactFlow></section>
     </div>
   </div>
 }
 function ChevronIcon() { return <span aria-hidden="true">→</span> }
-
