@@ -75,6 +75,14 @@ export const learningConcepts: LearningConcept[] = [
     "description": "Develop identity & access capability through engineering missions and observable results."
   },
   {
+    "id": "L1-CLI",
+    "kind": "concept",
+    "levelId": "level-1",
+    "code": "CLI",
+    "title": "Cloud CLI Operations",
+    "description": "Operate and inspect Azure from a command-line environment so cloud administration does not depend entirely on the Azure Portal."
+  },
+  {
     "id": "L2-STO",
     "kind": "concept",
     "levelId": "level-2",
@@ -120,7 +128,7 @@ export const learningConcepts: LearningConcept[] = [
     "levelId": "level-3",
     "code": "IAC",
     "title": "Infrastructure as Code",
-    "description": "Develop infrastructure as code capability through engineering missions and observable results."
+    "description": "Represent cloud infrastructure as reproducible, reviewable code. Use Terraform as the primary cross-platform IaC tool while gaining practical familiarity with Azure-native Bicep."
   },
   {
     "id": "L3-CICD",
@@ -714,6 +722,172 @@ export const challenges: Challenge[] = [
     "estimatedHours": "3-5"
   },
   {
+    "id": "L1-CLI-001",
+    "kind": "challenge",
+    "title": "Explore Azure From the Command Line",
+    "levelId": "level-1",
+    "conceptId": "L1-CLI",
+    "scenario": "Until now, most Azure resources have been inspected through graphical tools. You need a scriptable way to understand and operate your cloud environment from a terminal.",
+    "mission": "Install/use Azure CLI, authenticate to your Azure account, and inspect the Azure environment from the command line. Identify the active subscription and retrieve information about resources you previously created.",
+    "guidance": [
+      "This is your introduction to Azure CLI. Learn how Azure CLI commands are structured and how to discover available commands without depending on copied command snippets."
+    ],
+    "continuesFrom": [],
+    "prerequisites": [],
+    "learnToComplete": [
+      "Azure CLI",
+      "CLI authentication",
+      "Azure subscriptions",
+      "Resource groups",
+      "Azure resource IDs",
+      "Command help/discovery",
+      "CLI output formats"
+    ],
+    "requirements": [
+      "Authenticate successfully from the terminal",
+      "Identify the active Azure subscription",
+      "Retrieve information about existing Azure resources",
+      "Do not modify resources as part of this challenge"
+    ],
+    "doneWhen": [
+      "You can inspect your subscription from CLI",
+      "You can list resource groups/resources",
+      "You can retrieve details for one existing resource",
+      "You can explain the structure of an Azure resource ID"
+    ],
+    "evidence": [],
+    "difficulty": "Beginner",
+    "estimatedHours": "1-2"
+  },
+  {
+    "id": "L1-CLI-002",
+    "kind": "challenge",
+    "title": "Manage a Resource Without the Portal",
+    "levelId": "level-1",
+    "conceptId": "L1-CLI",
+    "scenario": "A routine Azure operation should not require navigating through multiple Portal pages.",
+    "mission": "Perform a complete Azure resource-management task using Azure CLI instead of the Azure Portal.\n\nUse a small disposable resource or a safe existing lab resource.",
+    "guidance": [
+      "Use CLI help and Azure documentation to discover the necessary operations yourself."
+    ],
+    "continuesFrom": [
+      "L1-CLI-001"
+    ],
+    "prerequisites": [
+      "L1-CLI-001"
+    ],
+    "learnToComplete": [
+      "Azure resource creation",
+      "Resource updates",
+      "Resource deletion",
+      "Resource groups",
+      "CLI parameters",
+      "Resource identification",
+      "Idempotency awareness"
+    ],
+    "requirements": [
+      "Resource operation must be performed without Portal-based configuration",
+      "Resource must be verified after creation/change",
+      "Disposable resources should be cleaned up afterward"
+    ],
+    "doneWhen": [
+      "Resource exists in expected state",
+      "State can be inspected from CLI",
+      "Required modification succeeds",
+      "Cleanup can also be performed through CLI"
+    ],
+    "evidence": [],
+    "difficulty": "Beginner",
+    "estimatedHours": "2-3"
+  },
+  {
+    "id": "L1-CLI-003",
+    "kind": "challenge",
+    "title": "Query Azure Data",
+    "levelId": "level-1",
+    "conceptId": "L1-CLI",
+    "scenario": "The environment is growing and raw command output is becoming difficult to inspect manually.",
+    "mission": "Use Azure CLI to answer practical questions about your Azure environment by filtering and formatting command output.\n\nExample questions may include:\n* Which VMs are currently running?\n* Which resources have public IP addresses?\n* Which resources exist inside a particular resource group?\n* Which region is each resource using?\n\nDo not hard-code the answers.",
+    "guidance": [
+      "Investigate Azure CLI query/filter capabilities and structured output rather than manually scanning long JSON responses."
+    ],
+    "continuesFrom": [
+      "L1-CLI-002"
+    ],
+    "prerequisites": [
+      "L1-CLI-001"
+    ],
+    "learnToComplete": [
+      "JSON",
+      "Azure CLI output formats",
+      "JMESPath querying",
+      "Filtering",
+      "Projection",
+      "Resource metadata",
+      "Structured command-line output"
+    ],
+    "requirements": [
+      "Queries must use Azure data directly",
+      "Results should contain only information relevant to the question",
+      "Avoid manually copying data into another tool just to filter it"
+    ],
+    "doneWhen": [
+      "You can answer at least three environment questions through CLI queries",
+      "Output is filtered into useful results",
+      "Queries continue working when Azure resources change"
+    ],
+    "evidence": [
+      "Save useful queries in the challenge folder README or script file"
+    ],
+    "difficulty": "Beginner",
+    "estimatedHours": "2-4"
+  },
+  {
+    "id": "L1-CLI-004",
+    "kind": "challenge",
+    "title": "Automate a Repeated Azure Operation",
+    "levelId": "level-1",
+    "conceptId": "L1-CLI",
+    "scenario": "You have discovered an Azure operation that would be tedious and error-prone to perform repeatedly by hand.",
+    "mission": "Create a small script that uses Azure CLI to automate a repeatable Azure task.\n\nThe script must operate on Azure resources rather than simply printing static information.",
+    "guidance": [
+      "The objective is not advanced shell scripting. Focus on turning a repeatable cloud operation into something reliable and parameterized."
+    ],
+    "continuesFrom": [
+      "L1-CLI-003"
+    ],
+    "prerequisites": [
+      "L1-CLI-003"
+    ],
+    "learnToComplete": [
+      "Azure CLI scripting",
+      "Bash or PowerShell scripting",
+      "Variables",
+      "Exit codes",
+      "Parameterization",
+      "Error handling",
+      "Repeatable cloud operations"
+    ],
+    "requirements": [
+      "Script must accept at least one configurable input",
+      "Avoid embedding credentials",
+      "Running the script repeatedly should have predictable behavior",
+      "Failures should be visible rather than silently ignored"
+    ],
+    "doneWhen": [
+      "Script performs the intended Azure operation",
+      "Input can change without modifying core script logic",
+      "Authentication credentials are not embedded",
+      "Script handles at least one expected failure safely"
+    ],
+    "evidence": [
+      "Script",
+      "Small README explaining purpose and expected inputs"
+    ],
+    "difficulty": "Intermediate",
+    "estimatedHours": "3-5"
+  },
+  {
     "id": "L2-STO-001",
     "kind": "challenge",
     "title": "Move Files Off the Server",
@@ -1251,8 +1425,7 @@ export const challenges: Challenge[] = [
     "continuesFrom": [
       "L3-OBS-003"
     ],
-    "prerequisites": [
-      "L3-OBS-003"
+    "prerequisites": ["L3-OBS-003", "L1-CLI-003" 
     ],
     "learnToComplete": [
       "Observability-driven troubleshooting",
@@ -1291,8 +1464,7 @@ export const challenges: Challenge[] = [
     "continuesFrom": [
       "L2-APP-002"
     ],
-    "prerequisites": [
-      "L2-APP-002"
+    "prerequisites": ["L2-APP-002", "L1-CLI-002" 
     ],
     "learnToComplete": [
       "Terraform",
@@ -1429,6 +1601,52 @@ export const challenges: Challenge[] = [
     "evidence": [],
     "difficulty": "Advanced",
     "estimatedHours": "4-7"
+  },
+  {
+    "id": "L3-IAC-005",
+    "kind": "challenge",
+    "title": "Rebuild a Component With Azure-Native IaC",
+    "levelId": "level-3",
+    "conceptId": "L3-IAC",
+    "scenario": "Your infrastructure is managed primarily through Terraform, but Azure also provides a native declarative infrastructure language. You need enough experience with the Azure-native approach to understand how it differs from Terraform.",
+    "mission": "Select a small, already-understood part of your Azure environment and describe/recreate it using Bicep.\n\nDo NOT migrate the entire project from Terraform.\n\nThe objective is comparison and familiarity, not duplication.",
+    "guidance": [
+      "Choose infrastructure you already know well so the learning focus remains on IaC syntax, deployment model, state behavior, and Azure-native tooling."
+    ],
+    "continuesFrom": [
+      "L3-IAC-001"
+    ],
+    "prerequisites": [
+      "L3-IAC-001",
+      "L1-CLI-002"
+    ],
+    "learnToComplete": [
+      "Azure Bicep",
+      "ARM deployment model",
+      "Declarative infrastructure",
+      "Parameters",
+      "Outputs",
+      "Resource dependencies",
+      "Azure deployment scopes",
+      "Terraform vs Bicep state model"
+    ],
+    "requirements": [
+      "Use Bicep to represent a small real Azure infrastructure component",
+      "Infrastructure behavior should match the intended existing design",
+      "Do not replace the primary Terraform implementation",
+      "Compare meaningful differences rather than syntax alone"
+    ],
+    "doneWhen": [
+      "Selected component can be deployed from Bicep",
+      "Resource configuration matches intended architecture",
+      "Short comparison describes:\n  * Terraform state\n  * Azure/Bicep deployment state model\n  * provider/platform portability\n  * Azure-specific integration\n  * situations where each may be appropriate"
+    ],
+    "evidence": [
+      "Bicep file(s)",
+      "short Terraform vs Bicep comparison note"
+    ],
+    "difficulty": "Intermediate",
+    "estimatedHours": "3-5"
   },
   {
     "id": "L3-CICD-001",
@@ -2036,10 +2254,9 @@ export const challenges: Challenge[] = [
     "continuesFrom": [
       "L4-HA-003"
     ],
-    "prerequisites": [
-      "L2-DAT-002",
+    "prerequisites": ["L2-DAT-002",
       "L2-STO-002",
-      "L1-NET-002"
+      "L1-NET-002", "L1-CLI-003" 
     ],
     "learnToComplete": [
       "Attack surface",

@@ -1,5 +1,5 @@
 export type NodeKind = 'level' | 'concept' | 'challenge'
-export type ConceptCode = 'COM' | 'NET' | 'WEB' | 'IAM' | 'STO' | 'DAT' | 'KEY' | 'APP' | 'OBS' | 'IAC' | 'CICD' | 'CON' | 'HA' | 'DR' | 'GOV' | 'SEC' | 'ARC' | 'OPT'
+export type ConceptCode = 'COM' | 'NET' | 'WEB' | 'IAM' | 'CLI' | 'STO' | 'DAT' | 'KEY' | 'APP' | 'OBS' | 'IAC' | 'CICD' | 'CON' | 'HA' | 'DR' | 'GOV' | 'SEC' | 'ARC' | 'OPT'
 export interface LearningLevel {
   id: string
   kind: 'level'
