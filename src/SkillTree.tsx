@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Background, Controls, Handle, Panel, Position, ReactFlow, useReactFlow, type Node, type NodeProps } from '@xyflow/react'
 import { Network, Shield, BookOpen, Swords, Scan, Check, Lock, Layers, Trophy, PanelLeft, Cpu, Database, KeyRound, Boxes, GitBranch, Activity, Globe, HardDrive, Fingerprint, Server, Code, HeartPulse, Archive, Scale, Compass, Gauge } from 'lucide-react'
 import { learningLevels } from './data/roadmap/projects'
@@ -20,7 +20,7 @@ function SkillNode({ data, selected }: NodeProps<Node<SkillData>>) {
   const Icon = data.capstone ? Trophy : data.kind === 'level' ? Layers : data.kind === 'concept' ? conceptIcons[data.code || ''] || BookOpen : Swords
   const shape = data.capstone ? silhouettes.capstone : data.kind === 'concept' && data.code === 'SEC' ? silhouettes.shield : silhouettes[data.kind]
   const mastered = data.total > 0 && data.completed === data.total
-  return <div className={`game-skill ${data.kind} ${data.capstone ? 'capstone' : ''} ${mastered ? 'mastered' : data.locked ? 'locked' : 'available'} ${selected ? 'selected' : ''}`}>
+  return <div className={`game-skill ${data.kind} ${data.capstone ? 'capstone' : ''} ${mastered ? 'mastered' : data.locked ? 'locked' : 'available'} ${selected ? 'selected' : ''} ${data.justMastered ? 'just-mastered' : ''}`}>
     <Handle type="target" position={Position.Left}/>
     <div className="skill-symbol"><svg viewBox="0 0 88 88" aria-hidden="true"><path d={shape}/><path className="inner-line" d={shape} transform="translate(7 7) scale(.84)"/></svg>{data.kind === 'root' ? <img className="azure-root-logo" src="/microsoft-azure.webp" alt="Microsoft Azure" width={40} height={40} draggable={false}/> : <Icon size={data.kind === 'level' ? 30 : 24} strokeWidth={1.5}/>} {mastered ? <Check className="skill-badge" size={15}/> : data.locked ? <Lock className="skill-badge" size={13}/> : null}</div>
     <strong>{data.title}</strong><small>{data.kind === 'challenge' ? data.id : `${data.kind.toUpperCase()} · ${Math.round(data.percent)}%`}</small>
@@ -48,7 +48,39 @@ export function SkillTree({ progress, onComplete, ready, saving, signedIn }: { p
   const [sidebar, setSidebar] = useState(() => window.innerWidth > 700)
   const [dependencies, setDependencies] = useState(false)
   const [continuations, setContinuations] = useState(true)
-  const graph = useMemo(() => createGraph(progress, levelId, selectedId, dependencies, continuations), [progress, levelId, selectedId, dependencies, continuations])
+  const [celebration, setCelebration] = useState<{ type: 'challenge' | 'level', id: string, title: string } | null>(null)
+  
+  const prevProgress = useRef(progress)
+  useEffect(() => {
+    if (!ready) { prevProgress.current = progress; return }
+    let newlyMastered: string | null = null
+    for (const id in progress) {
+      if (progress[id]?.status === 'mastered' && prevProgress.current[id]?.status !== 'mastered') {
+        newlyMastered = id
+      }
+    }
+    if (newlyMastered) {
+      const challenge = allLearningNodes.find(n => n.id === newlyMastered)
+      let isLevel = false
+      let cTitle = challenge?.title || ''
+      if (challenge && challenge.kind === 'challenge') {
+        const level = allLearningNodes.find(n => n.id === challenge.levelId)
+        if (level) {
+          const oldStats = progressFor(prevProgress.current, level)
+          const newStats = progressFor(progress, level)
+          if (oldStats.completed < oldStats.total && newStats.completed === newStats.total) {
+            isLevel = true
+            cTitle = level.title
+          }
+        }
+      }
+      setCelebration({ type: isLevel ? 'level' : 'challenge', id: isLevel ? (challenge as any).levelId : newlyMastered, title: cTitle })
+      setTimeout(() => setCelebration(null), 4000)
+    }
+    prevProgress.current = progress
+  }, [progress, ready])
+
+  const graph = useMemo(() => createGraph(progress, levelId, selectedId, dependencies, continuations, celebration?.id), [progress, levelId, selectedId, dependencies, continuations, celebration?.id])
   const selected = allLearningNodes.find(node => node.id === selectedId)
   const overall = progressFor(progress)
   function selectLevel(id: string) {
@@ -67,6 +99,15 @@ export function SkillTree({ progress, onComplete, ready, saving, signedIn }: { p
     <div className="game-tree-layout">
       {sidebar && <aside className="game-details" aria-label="Learning details"><div className="detail-scroll">{selected ? <ChallengeDetails key={selected.id} node={selected} progress={progress} onSelect={select} onClose={() => setSidebar(false)} onComplete={onComplete} ready={ready} saving={saving}/> : <div className="journey-overview"><button className="dismiss" aria-label="Close details" onClick={() => setSidebar(false)}>×</button><p className="game-kicker">PROJECT-BASED LEARNING</p><h2>Build. Operate. Evolve.</h2><p>Grow one Azure system through connected engineering missions. Choose a concept, then take on its challenges.</p><div className="derived-progress"><strong>{Math.floor(overall.percent)}%</strong><span>{overall.completed} / {overall.total} challenges completed</span><progress value={overall.completed} max={overall.total}/></div><button className="complete-skill" onClick={() => select('L1-COM-001')}>Explore your first mission</button><button className="capstone-link" onClick={() => select('CAP-AZURE-001')}><Trophy size={16}/>Final capstone<ChevronIcon/></button><p className="derived-note">{signedIn ? 'Challenge progress syncs to your account.' : 'Progress is saved in this browser. Guest and account progress are kept separate.'}</p><p className="derived-note">Your previous topic progress is preserved separately. This journey starts with challenge completion.</p></div>}</div></aside>}
       <section className="game-tree-canvas" aria-label="Azure project skill tree"><ReactFlow nodes={graph.nodes} edges={graph.edges} nodeTypes={nodeTypes} onNodeClick={(_, node) => select(node.id)} nodesDraggable={false} nodesConnectable={false} fitView fitViewOptions={{ padding: .18 }} minZoom={.06} maxZoom={2} onlyRenderVisibleElements><Background color="#243346" gap={32} size={1}/><Controls showInteractive={false}/><CanvasTools viewKey={`${levelId}:${sidebar}`} zoomToId={zoomToId}/><Panel position="top-left"><div className="tree-caption">SKILL CONSTELLATION<small>Level → Concept → Challenge</small></div>{!sidebar && <button className="recenter reopen-details" onClick={() => setSidebar(true)}><PanelLeft size={15}/>Details & progress</button>}</Panel><Panel position="bottom-center"><div className="tree-key"><span>⬡ Level</span><span>○ Concept</span><span>◇ Challenge</span><label><input type="checkbox" checked={continuations} onChange={event => setContinuations(event.target.checked)}/><i className="continuation-key"/>Project paths</label><label><input type="checkbox" checked={dependencies} onChange={event => setDependencies(event.target.checked)}/><i className="dependency-key"/>Prerequisites</label></div></Panel></ReactFlow></section>
+      
+      {celebration && (
+        <div className="celebration-toast" aria-live="polite">
+          <div className={`celebration-content ${celebration.type}`}>
+            <span className="celebration-badge">{celebration.type === 'level' ? 'LEVEL COMPLETE' : 'CHALLENGE MASTERED'}</span>
+            <h2 className="celebration-title">{celebration.title}</h2>
+          </div>
+        </div>
+      )}
     </div>
   </div>
 }

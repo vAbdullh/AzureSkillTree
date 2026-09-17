@@ -5,16 +5,16 @@ import { missingPrerequisites, progressFor, type ChallengeProgress } from './pro
 
 export type SkillData = {
   title: string; kind: 'root' | LearningNode['kind']; code?: string; capstone?: boolean
-  percent: number; completed: number; total: number; locked: boolean; id: string
+  percent: number; completed: number; total: number; locked: boolean; id: string; justMastered?: boolean
 }
-export function createGraph(progress: ChallengeProgress, levelId: string, selectedId: string | null, showDependencies: boolean, showContinuations: boolean) {
+export function createGraph(progress: ChallengeProgress, levelId: string, selectedId: string | null, showDependencies: boolean, showContinuations: boolean, justMasteredId: string | null = null) {
   const levels = learningLevels.filter(level => levelId === 'all' || level.id === levelId)
   const nodes: Node<SkillData>[] = []
   const edges: Edge[] = []
   const overall = progressFor(progress)
   nodes.push({ id: 'azure', type: 'skill', position: { x: -310, y: 0 }, data: { id: 'azure', kind: 'root', title: 'Azure Engineering', locked: false, ...overall } })
   const add = (node: LearningNode, x: number, y: number) => nodes.push({ id: node.id, type: 'skill', position: { x, y }, selected: node.id === selectedId,
-    ariaLabel: `${node.kind}: ${node.title}`, data: { id: node.id, kind: node.kind, title: node.title, ...progressFor(progress, node), locked: node.kind === 'challenge' && missingPrerequisites(node, progress).length > 0, code: node.kind === 'concept' ? node.code : undefined, capstone: node.kind === 'challenge' && node.capstone } })
+    ariaLabel: `${node.kind}: ${node.title}`, data: { id: node.id, kind: node.kind, title: node.title, ...progressFor(progress, node), locked: node.kind === 'challenge' && missingPrerequisites(node, progress).length > 0, code: node.kind === 'concept' ? node.code : undefined, capstone: node.kind === 'challenge' && node.capstone, justMastered: node.id === justMasteredId } })
   const branch = (source: string, target: string) => edges.push({ id: `group:${source}:${target}`, source, target, type: 'default', style: { stroke: '#30465c', strokeWidth: 1.3 }, zIndex: -1 })
   levels.forEach((level, index) => {
     const x = index * 1950
@@ -39,9 +39,11 @@ export function createGraph(progress: ChallengeProgress, levelId: string, select
       if (!visible.has(source)) continue
       const continuation = showContinuations && challenge.continuesFrom.includes(source)
       const emphasized = selectedId === challenge.id || selectedId === source
+      const isJustMasteredEdge = justMasteredId === source
       edges.push({ id: `relationship:${source}:${challenge.id}`, source, target: challenge.id, type: 'default', label: emphasized ? continuation ? 'continues project' : 'requires' : undefined,
         labelStyle: { fill: continuation ? '#c0adff' : '#a3bdd5', fontSize: 10 }, labelBgStyle: { fill: '#0c1420' },
-        style: { stroke: continuation ? '#9b87d1' : '#7a8b9f', strokeWidth: emphasized ? 2.6 : 1.4, strokeDasharray: continuation ? undefined : '5 6', opacity: emphasized ? 1 : .5 }, zIndex: emphasized ? 1 : 0 })
+        style: { stroke: continuation ? '#9b87d1' : '#7a8b9f', strokeWidth: emphasized ? 2.6 : 1.4, strokeDasharray: continuation ? undefined : '5 6', opacity: emphasized ? 1 : .5 }, zIndex: emphasized ? 1 : 0,
+        className: isJustMasteredEdge ? 'just-mastered-edge' : undefined, animated: isJustMasteredEdge })
     }
   }
   return { nodes, edges }
